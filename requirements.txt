@@ -1,0 +1,5 @@
+Deprecated==1.2.13
+git+https://github.com/sisch/pursuedpybear.git@feature/animation_loop#egg=ppb
+PySDL2==0.9.11
+pysdl2-dll==2.0.20
+wrapt==1.13.3
