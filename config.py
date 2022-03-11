@@ -1,5 +1,7 @@
 from ppb import keycodes
 
+DEBUG = True
+
 
 class Keys:
     move_left = keycodes.Left
