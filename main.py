@@ -69,6 +69,8 @@ def setup(scene):
     w = scene.add(Wind())
     scene.add(WindLabel(wind=w))
     scene.add(ships.Player(position=ppb.Vector(0, -5), wind=w))
+    scene.add(ships.Enemy(position=ppb.Vector(0, 0), wind=w, direction=ppb.Vector(1, 0)))
+
 
 def run():
     ppb.run(setup)
