@@ -34,10 +34,10 @@ def wind_direction(vector: ppb.Vector):
 
 class Wind(GameObject):
     direction = ppb.directions.Up
-    speed = 2.0
+    speed = 1.0
 
     def on_update(self, update, signal):
-        self.speed = max(0.0, min(5.0, self.speed + random.random() * 0.5 - 0.25))
+        self.speed = max(0.0, min(2.5, self.speed + random.random() * 0.5 - 0.25))
         random_rotation_offset = (random.random() * 5 - 2.5) * update.time_delta
         self.direction = rotated_vector(self.direction, random_rotation_offset).normalize()
 
@@ -69,7 +69,10 @@ def setup(scene):
     w = scene.add(Wind())
     scene.add(WindLabel(wind=w))
     scene.add(ships.Player(position=ppb.Vector(0, -5), wind=w))
-    scene.add(ships.Enemy(position=ppb.Vector(0, 0), wind=w, direction=ppb.Vector(1, 0)))
+    for e in range(config.number_of_enemies):
+        rnd = random.random()*10 - 5.0
+        dir = ppb.Vector(math.cos(rnd * math.tau), math.sin(rnd * math.tau))
+        scene.add(ships.Enemy(position=ppb.Vector(2, e*rnd), wind=w, direction=dir, is_anchored=True))
 
 
 def run():

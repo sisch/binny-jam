@@ -14,7 +14,7 @@ Bathe (nautical term™) in the nostalgic feeling of playing a totally underrate
 - [ ] Enemy ships spawn
 - [x] Cannonballs interact with ships
 - [x] Ships have a damage system
-- [ ] Upgrades for player ship
+- [x] Upgrades for player ship
 - [ ] Think of a win condition
 - [ ] Implement it!
 

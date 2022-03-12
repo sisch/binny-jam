@@ -5,6 +5,11 @@ from ppb.features.animation import Animation
 from events import AnimationLooped
 
 
+class ObjectWaves(ppb.Sprite):
+    image = Animation("assets/sprites/Effects/Splash{1..3}.png", 3)
+    size = 1
+
+
 class Splash(ppb.Sprite):
     image = Animation("assets/sprites/Effects/Splash{1..3}.png", 3)
     size = 0.4

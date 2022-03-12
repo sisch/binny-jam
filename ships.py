@@ -1,5 +1,6 @@
 import ppb
 from ppb.events import KeyReleased, KeyPressed
+from ppb.features.animation import Animation
 
 import config
 from effects import Explosion
@@ -17,65 +18,82 @@ class Ship(ppb.Sprite):
     shoot_left = None
     turn_speed = 1.5
     direction = ppb.directions.Up
-    projectile_speed = 1.0
+    projectile_range = 0.5
     projectiles_flying = 0
     max_projectiles = 1
     wind = None
-    health = 3
+    wind_effect = 0
+    health = 1
+    max_health = 1
+    is_anchored = False
+    state = 0
+    size = 0.4
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.basis = ppb.directions.Down
         self.facing = self.direction
-        self.image = ppb.Image(self.image_paths[0])
+        self.image = ppb.Image(self.image_paths[self.state])
+        self.health = self.max_health
 
     def on_update(self, update_event, signal):
         scene = update_event.scene
         movement = self.facing * self.speed * update_event.time_delta
         wind_effect = dot_product_as_cos(self.facing, self.wind.direction)
-        if config.DEBUG:
-            print(f"{wind_effect:.2f}")
-        movement += self.facing * (wind_effect * self.wind.speed * update_event.time_delta)
+        movement += self.wind_effect * self.facing * (wind_effect * self.wind.speed * update_event.time_delta)
         if dot_product_as_cos(self.facing, movement) < 0:
             movement = ppb.Vector(0, 0)
-        self.position += movement
+        if not self.__dict__.get("is_anchored", False):
+            self.position += movement
         if self.health <= 0:
             # TODO: Start Splash animation and spawn pickup
+            scene.add(Flotsam(position=self.position))
             scene.remove(self)
 
     def take_damage(self, projectile):
         self.health -= projectile.damage
         if self.health <= 0:
             return
-        self.image = ppb.Image(self.image_paths[-self.health])
+        self.state = 0 if self.health == self.max_health else 1 if self.health / self.max_health >= 0.5 else 2
+        self.image = ppb.Image(self.image_paths[self.state])
         self.speed *= 0.5
 
 
 class Player(Ship):
-    left = config.Keys.move_left
-    right = config.Keys.move_right
+    left = config.Keys.left
+    right = config.Keys.right
     shoot_right = config.Keys.use
     shoot_left = config.Keys.swap
+    upgrade = config.Keys.up
+    toggle_anchor = config.Keys.down
     cam_origin = None
     cam_target = None
     cam_progress = 0
     image_paths = [
-        "assets/sprites/Default size/Ships/ship (3).png",
-        "assets/sprites/Default size/Ships/ship (9).png",
-        "assets/sprites/Default size/Ships/ship (15).png"
+        "assets/sprites/Default size/Ships/dinghyLarge1.png",
+        "assets/sprites/Default size/Ships/dinghyLarge2.png",
+        "assets/sprites/Default size/Ships/dinghyLarge3.png"
     ]
+    upgrade_points = 0
+    current_upgrade_level = 0
+    upgrades_available = config.get_upgrade()
 
     def on_key_pressed(self, key_event: KeyPressed, signal):
         if key_event.key == self.left:
             self.rotate(15)
         elif key_event.key == self.right:
             self.rotate(-15)
+        elif key_event.key == self.upgrade:
+            self.run_upgrade()
+        elif key_event.key == self.toggle_anchor:
+            self.is_anchored = not self.is_anchored
         elif key_event.key == self.shoot_right or key_event.key == self.shoot_left:
             if self.projectiles_flying >= self.max_projectiles:
                 return
             rotation = 90 if key_event.key == self.shoot_right else -90
             shoot_direction = rotated_vector(self.facing, rotation)
-            key_event.scene.add(CannonBall(shooter=self, position=self.position + shoot_direction * 0.5, direction=shoot_direction * (self.speed + self.projectile_speed)))
+            key_event.scene.add(CannonBall(shooter=self, position=self.position + shoot_direction * 0.5,
+                                           direction=shoot_direction, range=self.projectile_range))
             self.projectiles_flying += 1
 
     def on_key_released(self, key_event: KeyReleased, signal):
@@ -100,6 +118,29 @@ class Player(Ship):
                 self.cam_target = None
                 self.cam_progress = 0
 
+    def pickup(self, object):
+        if isinstance(object, Flotsam):
+            self.upgrade_points += 1
+            self.health = min(self.health + 1, self.max_health)
+            self.state = 0 if self.health == self.max_health else 1 if self.health / self.max_health >= 0.5 else 2
+
+    def run_upgrade(self):
+        cost = self.current_upgrade_level + 1
+        if config.DEBUG:
+            print(f"Upgrade costs: {cost}, available points: {self.upgrade_points}")
+        if self.upgrade_points >= cost:
+            self.upgrade_points -= cost
+            for k, v in next(self.upgrades_available).items():
+                if config.DEBUG:
+                    print(k, v)
+                if hasattr(self, k):
+                    attribute = getattr(self, k)
+                    if type(attribute) == int:
+                        setattr(self, k, v+attribute)
+                    else:
+                        setattr(self, k, v)
+            self.image = ppb.Image(self.image_paths[self.state])
+
 
 class Enemy(Ship):
     image_paths = [
@@ -107,3 +148,17 @@ class Enemy(Ship):
         "assets/sprites/Default size/Ships/ship (8).png",
         "assets/sprites/Default size/Ships/ship (14).png"
     ]
+    max_health = 2
+    size = 1
+    wind_effect = 1
+
+
+class Flotsam(ppb.Sprite):
+    image = Animation("assets/sprites/Default size/Ships/sunk{1..5}.png", 2.5)
+
+    def on_update(self, update_event, signal):
+        for player_ship in update_event.scene.get(kind=Player):
+            if (player_ship.position - self.position).length <= self.size:
+                player_ship.pickup(self)
+                update_event.scene.remove(self)
+                break

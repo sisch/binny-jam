@@ -11,15 +11,21 @@ class CannonBall(ppb.Sprite):
     direction = None
     damage = 1
     image = ppb.Image("assets/sprites/Default size/Ship parts/cannonBall.png")
+    range = None
 
     def on_update(self, update_event, signal):
-        self.position += self.direction * update_event.time_delta
+        movement = self.direction * update_event.time_delta
+        self.position += movement
+        self.range -= movement.length
         self.direction -= self.direction*self.drag*update_event.time_delta
 
-        if self.direction.length < 0.3:
+        if self.range <= 0:
             update_event.scene.add(Splash(position=self.position))
             self.shooter.projectiles_flying -= 1
-            update_event.scene.remove(self)
+            try:
+                update_event.scene.remove(self)
+            except:
+                ...
 
         # Detect collision between Projectile and Ship
         for p in update_event.scene.get(kind=ships.Ship):
