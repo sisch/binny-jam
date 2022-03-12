@@ -37,7 +37,8 @@ python main.py
 - [ ] Implement it!
 
 ## Controls
-- Player Movement (`Left`/`Right` arrows)
-- Camera Tracking
+- Player Movement `Left`/`Right`
+- Drop / Raise Anchor (Stop ship) `Down`
+- Upgrade ship `Up` 
 - Shooting (`Q`/`E`)
 - Wind (test direction with `W`)
