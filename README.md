@@ -12,8 +12,8 @@ Bathe (nautical term™) in the nostalgic feeling of playing a totally underrate
 - [x] Ship can move around and shoot
 - [x] Ship does move faster with the wind and slower against it
 - [ ] Enemy ships spawn
-- [ ] Cannonballs interact with ships
-- [ ] Ships have a damage system
+- [x] Cannonballs interact with ships
+- [x] Ships have a damage system
 - [ ] Upgrades for player ship
 - [ ] Think of a win condition
 - [ ] Implement it!
