@@ -34,7 +34,7 @@ python main.py
 - [x] Cannonballs interact with ships
 - [x] Ships have a damage system
 - [x] Upgrades for player ship
-- [ ] Show upgrade points and cannons available
+- [x] Show upgrade points and cannons available
 - [ ] Think of a win condition
 - [ ] Implement it!
 
