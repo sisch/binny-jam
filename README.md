@@ -8,6 +8,9 @@ Upgrades give you extended range, more cannons (shoot in parallel),
 Bathe (nautical term™) in the nostalgic feeling of playing a totally underrated mini game from a traditional Point&Click adventure from somewhere deep in the carribean.  
 **No sword fights were fought during the production of this game.**
 
+## How to win
+Defeat all enemies
+
 ## How to start
 - Make sure Python >=3.6 is installed on your system
 - Create a virtual environment in your current directory by running `python -m venv env` in a terminal
@@ -35,8 +38,8 @@ python main.py
 - [x] Ships have a damage system
 - [x] Upgrades for player ship
 - [x] Show upgrade points and cannons available
-- [ ] Think of a win condition
-- [ ] Implement it!
+- [x] Think of a win condition
+- [x] Implement it!
 
 ## Controls
 - Player Movement `Left`/`Right`

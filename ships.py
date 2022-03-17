@@ -47,7 +47,7 @@ class Ship(ppb.Sprite):
         # Move
         movement = self.facing * self.speed * update_event.time_delta
         attack_angle_effect = dot_product_as_cos(self.facing, self.wind.direction)
-        movement += self.wind_effect * self.facing * (attack_angle_effect * self.wind.speed * update_event.time_delta)
+        movement += self.wind_effect * self.facing * (max(0.5, attack_angle_effect * self.wind.speed) * update_event.time_delta)
         if dot_product_as_cos(self.facing, movement) < 0:
             movement = ppb.Vector(0, 0)
         if not self.__dict__.get("is_anchored", False):
@@ -127,6 +127,9 @@ class Player(Ship):
                                            direction=shoot_direction*(self.projectile_damage+1), range=self.projectile_range,
                                            damage=self.projectile_damage))
             self.projectiles_flying += 1
+
+        if config.DEBUG and key_event.key == ppb.keycodes.Period:
+            key_event.scene.add(labels.WonLabel())
 
     def on_key_released(self, key_event: KeyReleased, signal):
         if key_event.key == self.left:

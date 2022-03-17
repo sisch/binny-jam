@@ -8,7 +8,7 @@ from ppb.gomlib import GameObject
 import ships
 from mathutils import rotated_vector
 import config
-from labels import LootLabel, LootLabel2, CannonLabel, CannonLabel2, WindLabel, Indicator
+from labels import LootLabel, LootLabel2, CannonLabel, CannonLabel2, WindLabel, Indicator, EnemiesLeftLabel
 
 
 class Wind(GameObject):
@@ -56,6 +56,7 @@ def setup(scene):
     scene.add(CannonLabel2(player=player))
     scene.add(LootLabel())
     scene.add(LootLabel2(player=player))
+    scene.add(EnemiesLeftLabel())
 
 
 def run():

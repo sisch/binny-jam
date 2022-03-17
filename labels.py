@@ -2,6 +2,9 @@ import ppb
 import config
 import math
 
+import ships
+
+
 def wind_direction(vector: ppb.Vector):
     angle = math.atan2(vector.y, vector.x)*360/math.tau
     angle = (angle + 360.0) % 360.0
@@ -40,7 +43,7 @@ class UILabel(ppb.Sprite):
 
 
 class WindLabel(UILabel):
-    screen_position = ppb.Vector(-8.5, -8.5)
+    screen_position = ppb.Vector(-9, -8.5)
     tags = ("Wind", )
     wind = None
 
@@ -49,7 +52,7 @@ class WindLabel(UILabel):
         if self.update_timer > self.update_interval:
             self.update_timer -= self.update_interval
             self.image = ppb.Text(f"Wind {self.wind.speed:.1f} knots {wind_direction(self.wind.direction)}",
-                                  font=config.default_font, color=(255, 255, 255))
+                                  font=config.large_font, color=(255, 255, 255))
 
 
 class CannonLabel2(UILabel):
@@ -115,3 +118,22 @@ class Indicator(ppb.Sprite):
         direction = (self.target.position - self.player.position).normalize()
         self.position = self.player.position + direction
         self.facing = self.target.position - self.position
+
+
+class WonLabel(UILabel):
+    screen_position = ppb.Vector(0, 0)
+    size = 4
+    image = ppb.Text("You won!", font=config.large_font, color=(180, 180, 20))
+
+
+class EnemiesLeftLabel(UILabel):
+    screen_position = ppb.Vector(-11, 9)
+
+    def on_update(self, update_event, signal):
+        super().on_update(update_event, signal)
+        number_of_enemies = len(list(update_event.scene.get(kind=ships.Enemy)))
+        if number_of_enemies == 0:
+            update_event.scene.add(WonLabel())
+            signal(ppb.events.ScenePaused)
+
+        self.image = ppb.Text(f"{number_of_enemies} left", font=config.default_font, color=(255, 255, 255))

@@ -4,7 +4,8 @@ from ppb import keycodes
 DEBUG = True
 
 number_of_enemies = 11
-default_font = ppb.Font("assets/fonts/Fredoka-Regular.ttf", size=12)
+default_font = ppb.Font("assets/fonts/Fredoka-Regular.ttf", size=24)
+large_font = ppb.Font("assets/fonts/Fredoka-Regular.ttf", size=56)
 
 class Keys:
     left = keycodes.Left
