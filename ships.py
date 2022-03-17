@@ -1,3 +1,5 @@
+import math
+
 import ppb
 from ppb.events import KeyReleased, KeyPressed
 from ppb.features.animation import Animation
@@ -16,10 +18,11 @@ class Ship(ppb.Sprite):
     right = None
     shoot_right = None
     shoot_left = None
-    turn_speed = 1.5
-    direction = ppb.directions.Up
+    turn_speed = 45
+    direction = ppb.directions.Down
     projectile_range = 0.5
     projectiles_flying = 0
+    projectile_damage = 0.5
     max_projectiles = 1
     wind = None
     wind_effect = 0
@@ -28,16 +31,18 @@ class Ship(ppb.Sprite):
     is_anchored = False
     state = 0
     size = 0.4
+    target_rotation = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.basis = ppb.directions.Down
-        self.facing = self.direction
         self.image = ppb.Image(self.image_paths[self.state])
         self.health = self.max_health
+        self.target_rotation = (self.rotation + 180) % 360
 
     def on_update(self, update_event, signal):
         scene = update_event.scene
+
+        # Move
         movement = self.facing * self.speed * update_event.time_delta
         wind_effect = dot_product_as_cos(self.facing, self.wind.direction)
         movement += self.wind_effect * self.facing * (wind_effect * self.wind.speed * update_event.time_delta)
@@ -45,15 +50,35 @@ class Ship(ppb.Sprite):
             movement = ppb.Vector(0, 0)
         if not self.__dict__.get("is_anchored", False):
             self.position += movement
+
+        # Sink
         if self.health <= 0:
             # TODO: Start Splash animation and spawn pickup
             scene.add(Flotsam(position=self.position))
             scene.remove(self)
+            return
+
+        # Turn
+        if self.target_rotation is not None and abs(max(self.target_rotation,self.rotation)-min(self.target_rotation, self.rotation)) > 10:
+            direction = self.shortest_rotation_direction(self.rotation, self.target_rotation)
+            self.rotate(direction*self.turn_speed*update_event.time_delta)
+
+    def shortest_rotation_direction(self, from_rotation, to_rotation):
+        fro = from_rotation /360 * math.tau
+        to = to_rotation /360 * math.tau
+        rotation = (fro-to + 5*math.tau/2) % math.tau - math.tau/2
+        return rotation / abs(rotation)
+
+    def turn_right(self, degrees=15):
+        self.target_rotation = (self.target_rotation - degrees + 360) % 360
+
+    def turn_left(self, degrees=15):
+        self.target_rotation = (self.target_rotation + degrees + 360) % 360
 
     def take_damage(self, projectile):
-        self.health -= projectile.damage
         if self.health <= 0:
             return
+        self.health -= projectile.damage
         self.state = 0 if self.health == self.max_health else 1 if self.health / self.max_health >= 0.5 else 2
         self.image = ppb.Image(self.image_paths[self.state])
         self.speed *= 0.5
@@ -80,9 +105,9 @@ class Player(Ship):
 
     def on_key_pressed(self, key_event: KeyPressed, signal):
         if key_event.key == self.left:
-            self.rotate(15)
+            self.turn_left()
         elif key_event.key == self.right:
-            self.rotate(-15)
+            self.turn_right()
         elif key_event.key == self.upgrade:
             self.run_upgrade()
         elif key_event.key == self.toggle_anchor:
@@ -93,7 +118,8 @@ class Player(Ship):
             rotation = 90 if key_event.key == self.shoot_right else -90
             shoot_direction = rotated_vector(self.facing, rotation)
             key_event.scene.add(CannonBall(shooter=self, position=self.position + shoot_direction * 0.5,
-                                           direction=shoot_direction, range=self.projectile_range))
+                                           direction=shoot_direction, range=self.projectile_range,
+                                           damage=self.projectile_damage))
             self.projectiles_flying += 1
 
     def on_key_released(self, key_event: KeyReleased, signal):
@@ -151,6 +177,10 @@ class Enemy(Ship):
     max_health = 2
     size = 1
     wind_effect = 1
+
+    def on_update(self, update_event, signal):
+        super().on_update(update_event, signal)
+        ...
 
 
 class Flotsam(ppb.Sprite):

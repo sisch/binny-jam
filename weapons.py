@@ -9,7 +9,7 @@ class CannonBall(ppb.Sprite):
     size = 0.25
     drag = 0.5
     direction = None
-    damage = 1
+    damage = 0.5
     image = ppb.Image("assets/sprites/Default size/Ship parts/cannonBall.png")
     range = None
 
@@ -32,8 +32,10 @@ class CannonBall(ppb.Sprite):
             if p == self.shooter:
                 continue
             if (p.position - self.position).length <= p.size:
+                print(f"Hit {p} at {p.position} with damage {self.damage}")
                 update_event.scene.add(Explosion(position=self.position))
                 self.shooter.projectiles_flying -= 1
                 update_event.scene.remove(self)
                 p.take_damage(self)
+                print(f"Health after hit {p.health}")
                 break

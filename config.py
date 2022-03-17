@@ -1,8 +1,10 @@
+import ppb
 from ppb import keycodes
 
 DEBUG = True
 
 number_of_enemies = 10
+default_font = ppb.Font("assets/fonts/Fredoka-Regular.ttf", size=12)
 
 class Keys:
     left = keycodes.Left
@@ -31,7 +33,8 @@ upgrade_list = [
         "max_projectiles": 1,
         "current_upgrade_level": 1,
         "size": 0.6,
-        "projectile_range": 0.8
+        "projectile_range": 0.8,
+        "projectile_damage": 0.7
     },
     {
         "max_health": 1,
@@ -44,21 +47,24 @@ upgrade_list = [
             "assets/sprites/Default size/Ships/ship (15).png"
         ],
         "wind_effect": 0.8,
-        "size": 0.6,
-        "projectile_range": 1.2
+        "size": 1.0,
+        "projectile_range": 1.2,
+        "projectile_damage": 1.0
     },
     {
         "max_projectiles": 1,
         "current_upgrade_level": 1,
         "wind_effect": 1.0,
-        "size": 1.0,
-        "projectile_range": 1.6
+        "size": 1.2,
+        "projectile_range": 1.6,
+        "projectile_damage": 1.1
     },
     {
         "max_projectiles": 1,
         "current_upgrade_level": 1,
-        "size": 1.3,
-        "projectile_range": 2.5
+        "size": 1.4,
+        "projectile_range": 2.5,
+        "projectile_damage": 1.2
     },
 
 ]

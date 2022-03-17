@@ -30,9 +30,11 @@ python main.py
 - [x] Ship can move around and shoot
 - [x] Ship does move faster with the wind and slower against it
 - [ ] Enemy ships spawn
+- [ ] Enemy ships move
 - [x] Cannonballs interact with ships
 - [x] Ships have a damage system
 - [x] Upgrades for player ship
+- [ ] Show upgrade points and cannons available
 - [ ] Think of a win condition
 - [ ] Implement it!
 
