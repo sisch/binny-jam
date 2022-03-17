@@ -5,6 +5,8 @@ from ppb.events import KeyReleased, KeyPressed
 from ppb.features.animation import Animation
 
 import config
+import labels
+from main import Indicator
 from effects import Explosion
 from mathutils import dot_product_as_cos, lerp_vector, rotated_vector
 from weapons import CannonBall
@@ -44,8 +46,8 @@ class Ship(ppb.Sprite):
 
         # Move
         movement = self.facing * self.speed * update_event.time_delta
-        wind_effect = dot_product_as_cos(self.facing, self.wind.direction)
-        movement += self.wind_effect * self.facing * (wind_effect * self.wind.speed * update_event.time_delta)
+        attack_angle_effect = dot_product_as_cos(self.facing, self.wind.direction)
+        movement += self.wind_effect * self.facing * (attack_angle_effect * self.wind.speed * update_event.time_delta)
         if dot_product_as_cos(self.facing, movement) < 0:
             movement = ppb.Vector(0, 0)
         if not self.__dict__.get("is_anchored", False):
@@ -54,7 +56,11 @@ class Ship(ppb.Sprite):
         # Sink
         if self.health <= 0:
             # TODO: Start Splash animation and spawn pickup
-            scene.add(Flotsam(position=self.position))
+            flotsam = scene.add(Flotsam(position=self.position))
+            for indicator in scene.get(kind=labels.Indicator):
+                if indicator.target == self:
+                    indicator.target = flotsam
+                    break
             scene.remove(self)
             return
 
@@ -117,8 +123,8 @@ class Player(Ship):
                 return
             rotation = 90 if key_event.key == self.shoot_right else -90
             shoot_direction = rotated_vector(self.facing, rotation)
-            key_event.scene.add(CannonBall(shooter=self, position=self.position + shoot_direction * 0.5,
-                                           direction=shoot_direction, range=self.projectile_range,
+            key_event.scene.add(CannonBall(shooter=self, position=self.position + shoot_direction/shoot_direction.length * 0.5,
+                                           direction=shoot_direction*(self.projectile_damage+1), range=self.projectile_range,
                                            damage=self.projectile_damage))
             self.projectiles_flying += 1
 
@@ -190,5 +196,9 @@ class Flotsam(ppb.Sprite):
         for player_ship in update_event.scene.get(kind=Player):
             if (player_ship.position - self.position).length <= self.size:
                 player_ship.pickup(self)
+                for indicator in update_event.scene.get(kind=labels.Indicator):
+                    if indicator.target == self:
+                        update_event.scene.remove(indicator)
+                        break
                 update_event.scene.remove(self)
                 break

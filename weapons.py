@@ -1,3 +1,5 @@
+from math import sqrt
+
 import ppb as ppb
 
 from effects import Splash, Explosion
@@ -18,7 +20,7 @@ class CannonBall(ppb.Sprite):
         self.position += movement
         self.range -= movement.length
         self.direction -= self.direction*self.drag*update_event.time_delta
-
+        self.size = min(self.range * 0.1 + self.damage/2, 1.2)
         if self.range <= 0:
             update_event.scene.add(Splash(position=self.position))
             self.shooter.projectiles_flying -= 1

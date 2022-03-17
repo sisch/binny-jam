@@ -100,3 +100,18 @@ class LootLabel(UILabel):
     screen_position = ppb.Vector(8.5, 7.5)
     size = 1
     image = ppb.Image("assets/sprites/chestpack01openwood_withgold.png")
+
+
+class Indicator(ppb.Sprite):
+    image = ppb.Image("assets/sprites/Default size/Ship parts/flag (2).png")
+    player = None
+    target = None
+    size = 0.2
+    tags = ("Indicator", )
+
+    def on_update(self, update_event, signal):
+        if self.player is None or self.target is None:
+            update_event.scene.remove(self)
+        direction = (self.target.position - self.player.position).normalize()
+        self.position = self.player.position + direction
+        self.facing = self.target.position - self.position

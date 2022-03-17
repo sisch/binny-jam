@@ -8,16 +8,23 @@ from ppb.gomlib import GameObject
 import ships
 from mathutils import rotated_vector
 import config
-from labels import LootLabel, LootLabel2, CannonLabel, CannonLabel2, WindLabel
+from labels import LootLabel, LootLabel2, CannonLabel, CannonLabel2, WindLabel, Indicator
+
 
 class Wind(GameObject):
     direction = ppb.directions.Up
     speed = 1.0
+    timer = 0
+    change_interval = 5
 
     def on_update(self, update, signal):
         self.speed = max(0.0, min(2.5, self.speed + random.random() * 0.5 - 0.25))
-        random_rotation_offset = (random.random() * 5 - 2.5) * update.time_delta
-        self.direction = rotated_vector(self.direction, random_rotation_offset).normalize()
+
+        self.timer += update.time_delta
+        if self.timer >= self.change_interval:
+            self.timer -= self.change_interval
+            random_rotation_offset = random.random() * 50 - 25
+            self.direction = rotated_vector(self.direction, random_rotation_offset).normalize()
 
     def on_key_pressed(self, event, signal):
         if config.DEBUG and event.key == ppb.keycodes.W:
@@ -28,11 +35,23 @@ class Wind(GameObject):
 def setup(scene):
     w = scene.add(Wind())
     scene.add(WindLabel(wind=w))
-    player = scene.add(ships.Player(position=ppb.Vector(0, -5), wind=w, facing=ppb.directions.Up))
+    player = scene.add(ships.Player(position=ppb.Vector(0, 0), wind=w, facing=ppb.directions.Up))
+    difficulty = 1.0
     for e in range(config.number_of_enemies):
-        rnd = random.random()*10 - 5.0, random.random()*20 - 10
-        dir = ppb.Vector(math.cos(rnd[0] * math.tau), math.sin(rnd[1] * math.tau))
-        scene.add(ships.Enemy(position=ppb.Vector(rnd[0], e*rnd[1]), wind=w, facing=dir, is_anchored=True))
+        angle = random.random() * math.tau  # 0 - 360 degrees in radians
+        radius = random.random() * (5*difficulty) + 3
+        spawn_position = ppb.Vector(radius*math.cos(angle), radius*math.sin(angle))
+        # Check for collision once. Not nice but suitable for now
+        for enemy in scene.get(kind=ships.Enemy):
+            if (enemy.position - spawn_position).length <= enemy.size:
+                angle = random.random() * math.tau
+                spawn_position = ppb.Vector(radius * math.cos(angle), radius * math.sin(angle))
+        angle = random.random() * math.tau
+        look_direction = ppb.Vector(math.cos(angle), math.sin(angle))
+        enemy_ship = scene.add(ships.Enemy(position=spawn_position, wind=w, facing=look_direction, is_anchored=True))
+        scene.add(Indicator(player=player, target=enemy_ship))
+        if e > 3:
+            difficulty += 0.5
     scene.add(CannonLabel())
     scene.add(CannonLabel2(player=player))
     scene.add(LootLabel())
