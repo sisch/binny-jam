@@ -23,7 +23,7 @@ class CannonBall(ppb.Sprite):
         self.direction -= self.direction*self.drag*update_event.time_delta
         self.size = min(self.range * 0.1 + self.damage/2, 1.2)
         if self.last_position is not None and self.position.isclose(self.last_position, abs_tol=0.01):
-            range = -1
+            self.range = -1
         if self.range <= 0:
             update_event.scene.add(Splash(position=self.position))
             self.shooter.projectiles_flying -= 1
@@ -31,6 +31,7 @@ class CannonBall(ppb.Sprite):
                 update_event.scene.remove(self)
             except:
                 ...
+        self.last_position = self.position
 
         # Detect collision between Projectile and Ship
         for p in update_event.scene.get(kind=ships.Ship):
