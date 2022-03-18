@@ -12,14 +12,14 @@ Bathe (nautical term™) in the nostalgic feeling of playing a totally underrate
 Defeat all enemies
 
 ## How to start
-- Make sure Python >=3.6 is installed on your system
+- Make sure Python >=3.8 is installed on your system
 - Create a virtual environment in your current directory by running `python -m venv env` in a terminal
 - Activate the environment and install all dependencies
 ```shell
 # Windows
 env/Scripts/activate.ps1
 # Unix
-source env/Scripts/activate
+source env/bin/activate
 
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
