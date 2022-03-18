@@ -69,7 +69,7 @@ def setup(scene):
 
 
 def run():
-    ppb.run(setup)
+    ppb.run(setup, title="Letter of Sean ... or Was It Marque?")
 
 
 if __name__ == '__main__':
