@@ -32,8 +32,8 @@ python main.py
 ## Progress
 - [x] Ship can move around and shoot
 - [x] Ship does move faster with the wind and slower against it
-- [ ] Enemy ships spawn
-- [ ] Enemy ships move
+- [ ] ~~Enemy ships spawn~~
+- [x] Enemy ships move
 - [x] Cannonballs interact with ships
 - [x] Ships have a damage system
 - [x] Upgrades for player ship
@@ -47,3 +47,10 @@ python main.py
 - Upgrade ship `Up` 
 - Shooting (`Q`/`E`)
 - Wind (test direction with `W`)
+
+
+## License
+MIT License &copy; 2022 Plantprogrammer (see [LICENSE](LICENSE))
+
+Feel free to add, adapt, or otherwise tinker with the project. Especially writing enemy AI was 
+completely out of scope of this game jam and would need some love :)  
