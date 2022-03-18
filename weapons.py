@@ -14,6 +14,7 @@ class CannonBall(ppb.Sprite):
     damage = 0.5
     image = ppb.Image("assets/sprites/Default size/Ship parts/cannonBall.png")
     range = None
+    last_position = None
 
     def on_update(self, update_event, signal):
         movement = self.direction * update_event.time_delta
@@ -21,6 +22,8 @@ class CannonBall(ppb.Sprite):
         self.range -= movement.length
         self.direction -= self.direction*self.drag*update_event.time_delta
         self.size = min(self.range * 0.1 + self.damage/2, 1.2)
+        if self.last_position is not None and self.position.isclose(self.last_position, abs_tol=0.01):
+            range = -1
         if self.range <= 0:
             update_event.scene.add(Splash(position=self.position))
             self.shooter.projectiles_flying -= 1

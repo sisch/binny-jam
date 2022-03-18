@@ -1,7 +1,7 @@
 import ppb
 from ppb import keycodes
 
-DEBUG = True
+DEBUG = False
 
 number_of_enemies = 11
 default_font = ppb.Font("assets/fonts/Fredoka-Regular.ttf", size=24)
