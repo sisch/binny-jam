@@ -48,7 +48,16 @@ def setup(scene):
                 spawn_position = ppb.Vector(radius * math.cos(angle), radius * math.sin(angle))
         angle = random.random() * math.tau
         look_direction = ppb.Vector(math.cos(angle), math.sin(angle))
-        enemy_ship = scene.add(ships.Enemy(position=spawn_position, wind=w, facing=look_direction, is_anchored=True))
+        enemy_ship = scene.add(ships.Enemy(
+            position=spawn_position,
+            wind=w,
+            facing=look_direction,
+            is_anchored=True,
+            anchor_timer=random.random()*20,
+            turn_timer=random.random()*15,
+            max_projectiles=math.ceil(difficulty),
+            projectile_range=1.5 + 0.1 * 2**difficulty,
+            shoot_timeout=1/difficulty))
         scene.add(Indicator(player=player, target=enemy_ship))
         if e > 3:
             difficulty += 0.5

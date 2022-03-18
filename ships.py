@@ -1,4 +1,5 @@
 import math
+import random
 
 import ppb
 from ppb.events import KeyReleased, KeyPressed
@@ -6,6 +7,7 @@ from ppb.features.animation import Animation
 
 import config
 import labels
+import mathutils
 from main import Indicator
 from effects import Explosion
 from mathutils import dot_product_as_cos, lerp_vector, rotated_vector
@@ -18,8 +20,8 @@ class Ship(ppb.Sprite):
     image_paths = []
     left = None
     right = None
-    shoot_right = None
-    shoot_left = None
+    shoot_right_key = None
+    shoot_left_key = None
     turn_speed = 45
     direction = ppb.directions.Down
     projectile_range = 0.5
@@ -34,15 +36,19 @@ class Ship(ppb.Sprite):
     state = 0
     size = 0.4
     target_rotation = None
+    shoot_timer = 0
+    shoot_timeout = 0.5
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.image = ppb.Image(self.image_paths[self.state])
         self.health = self.max_health
-        self.target_rotation = (self.rotation + 180) % 360
+        if self.target_rotation is None:
+            self.target_rotation = (self.rotation + 180) % 360
 
     def on_update(self, update_event, signal):
         scene = update_event.scene
+        self.shoot_timer -= update_event.time_delta
 
         # Move
         movement = self.facing * self.speed * update_event.time_delta
@@ -89,12 +95,35 @@ class Ship(ppb.Sprite):
         self.image = ppb.Image(self.image_paths[self.state])
         self.speed *= 0.5
 
+    def shoot(self, event, angle=None):
+        if self.projectiles_flying >= self.max_projectiles or self.shoot_timer > 0:
+            return
+        rotation = angle
+        if angle is None:
+            if random.random() < 0.5:
+                rotation = 90
+            else:
+                rotation = -90
+        shoot_direction = rotated_vector(self.facing, rotation)
+        event.scene.add(
+            CannonBall(shooter=self, position=self.position + shoot_direction / shoot_direction.length * 0.5,
+                       direction=shoot_direction * (self.projectile_damage + 1), range=self.projectile_range,
+                       damage=self.projectile_damage))
+        self.projectiles_flying += 1
+        self.shoot_timer = self.shoot_timeout
+
+    def shoot_right(self, event):
+        self.shoot(event, angle=90)
+
+    def shoot_left(self, event):
+        self.shoot(event, angle=-90)
+
 
 class Player(Ship):
     left = config.Keys.left
     right = config.Keys.right
-    shoot_right = config.Keys.use
-    shoot_left = config.Keys.swap
+    shoot_right_key = config.Keys.use
+    shoot_left_key = config.Keys.swap
     upgrade = config.Keys.up
     toggle_anchor = config.Keys.down
     cam_origin = None
@@ -108,6 +137,7 @@ class Player(Ship):
     upgrade_points = 0
     current_upgrade_level = 0
     upgrades_available = config.get_upgrade()
+    shoot_timeout = 0.1
 
     def on_key_pressed(self, key_event: KeyPressed, signal):
         if key_event.key == self.left:
@@ -118,15 +148,11 @@ class Player(Ship):
             self.run_upgrade()
         elif key_event.key == self.toggle_anchor:
             self.is_anchored = not self.is_anchored
-        elif key_event.key == self.shoot_right or key_event.key == self.shoot_left:
-            if self.projectiles_flying >= self.max_projectiles:
-                return
-            rotation = 90 if key_event.key == self.shoot_right else -90
-            shoot_direction = rotated_vector(self.facing, rotation)
-            key_event.scene.add(CannonBall(shooter=self, position=self.position + shoot_direction/shoot_direction.length * 0.5,
-                                           direction=shoot_direction*(self.projectile_damage+1), range=self.projectile_range,
-                                           damage=self.projectile_damage))
-            self.projectiles_flying += 1
+        elif key_event.key == self.shoot_right_key:
+            self.shoot_right(key_event)
+        elif key_event.key == self.shoot_left_key:
+            self.shoot_left(key_event)
+
 
         if config.DEBUG and key_event.key == ppb.keycodes.Period:
             key_event.scene.add(labels.WonLabel())
@@ -186,10 +212,48 @@ class Enemy(Ship):
     max_health = 2
     size = 1
     wind_effect = 1
+    turn_timer = 0
+    turn_interval = 15
+    anchor_timer = 0
+    anchor_interval = 25
+    sight_radius = 4.0
+    player_in_sight = None
+    projectile_range = 2.0
 
     def on_update(self, update_event, signal):
         super().on_update(update_event, signal)
-        ...
+
+        # detect player
+        p = update_event.scene.get(kind=Player)
+        player = next(p)
+        if player is not None and (player.position - self.position).length <= self.sight_radius:
+            self.player_in_sight = player
+
+        # if player is in sight follow player and do nothing else
+        if self.player_in_sight is not None:
+            self.is_anchored = False
+            player_vector = self.player_in_sight.position - self.position
+            player_target = (self.player_in_sight.position + self.player_in_sight.facing) - self.position
+            self.target_rotation = (self.basis.angle(player_target) + 180) % 360
+            print(f"{str(self)}, {self.target_rotation:.1f}")
+            distance = player_vector.length
+            if distance < self.projectile_range * 0.7:
+                self.target_rotation = self.player_in_sight.rotation
+                if mathutils.dot_product(self.facing, player_vector) > 0.7:  # Approaching player with side
+                    self.shoot(update_event)
+            if (self.player_in_sight.position - self.position).length < self.sight_radius * 5:
+                self.player_in_sight = None
+        else:
+            self.turn_timer += update_event.time_delta
+            if self.turn_timer > self.turn_interval:
+                self.turn_timer -= self.turn_interval
+                self.target_rotation = random.random()*360
+
+        self.anchor_timer += update_event.time_delta
+
+        if self.anchor_timer > self.anchor_interval:
+            self.anchor_timer -= self.anchor_interval
+            self.is_anchored = not self.is_anchored
 
 
 class Flotsam(ppb.Sprite):

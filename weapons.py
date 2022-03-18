@@ -31,7 +31,7 @@ class CannonBall(ppb.Sprite):
 
         # Detect collision between Projectile and Ship
         for p in update_event.scene.get(kind=ships.Ship):
-            if p == self.shooter:
+            if p == self.shooter or isinstance(p, type(self.shooter)):
                 continue
             if (p.position - self.position).length <= p.size:
                 print(f"Hit {p} at {p.position} with damage {self.damage}")
