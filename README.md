@@ -6,7 +6,7 @@ You commandeer a ship (nautical term™) and you have cannons. What you do not h
 So sail away, plunder some ships, and upgrade yours.
 Upgrades give you extended range, more cannons (shoot in parallel), 
 Bathe (nautical term™) in the nostalgic feeling of playing a totally underrated mini game from a traditional Point&Click adventure from somewhere deep in the carribean.  
-**No sword fights were fought during the production of this game.**
+**~~No sword fights~~ Not more than 3 sword fights were fought during the production of this game.**
 
 ## How to win
 Defeat all enemies
